@@ -15,8 +15,6 @@ import java.io.IOException;
 @WebServlet(urlPatterns = {"/"})
 public class SessionsServlet extends HttpServlet {
 
-    private final AccountService accountService = new AccountService();
-
     public void doGet(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
             throws ServletException, IOException {
 
@@ -36,7 +34,7 @@ public class SessionsServlet extends HttpServlet {
             return;
         }
 
-        UserAccount profile = accountService.getUserByLogin(login);
+        UserAccount profile = AccountService.getUserByLogin(login);
         if (profile == null || !profile.password().equals(password)) {
             response.setContentType("text/html;charset=utf-8");
             //response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

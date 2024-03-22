@@ -16,8 +16,6 @@ import java.util.Date;
 @WebServlet(urlPatterns = {"/manager"})
 public class FileManagerServlet extends HttpServlet {
 
-    private final FileService fileService = new FileService();
-
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
@@ -36,7 +34,7 @@ public class FileManagerServlet extends HttpServlet {
                 pathFromRequest : pathToUserDir;
 
         request.setAttribute("currentDirPath", currentDirPath);
-        request.setAttribute("list", fileService.GetItemsFromDirectory(currentDirPath));
+        request.setAttribute("list", FileService.GetItemsFromDirectory(currentDirPath));
 
         String parentDirPath = new File(currentDirPath).getParent();
         if (parentDirPath == null) {

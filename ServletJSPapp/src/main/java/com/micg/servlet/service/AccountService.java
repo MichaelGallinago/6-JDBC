@@ -7,20 +7,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AccountService {
-    private final AccountRepository accountRepository;
+    private static final AccountRepository accountRepository;
 
-    public AccountService() {
-        this.accountRepository = new AccountRepository();
+    static {
+        accountRepository = new AccountRepository();
     }
 
-    public void addNewUser(UserAccount user) {
+    public static void addNewUser(UserAccount user) {
         if (user == null) {
             return;
         }
         accountRepository.addUser(user);
     }
 
-    public UserAccount getUserByLogin(String login) {
+    public static UserAccount getUserByLogin(String login) {
         return accountRepository.getUserByLogin(login);
     }
 }

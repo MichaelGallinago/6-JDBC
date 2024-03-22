@@ -17,9 +17,6 @@ import static com.micg.servlet.service.FileService.userDirectoriesPath;
 @WebServlet(urlPatterns = {"/registration"})
 public class UsersServlet extends HttpServlet {
 
-    private final AccountService accountService = new AccountService();
-    private final FileService fileService = new FileService();
-
     public void doGet(HttpServletRequest httpServletRequest,
                       HttpServletResponse httpServletResponse) throws ServletException, IOException {
         httpServletRequest.getRequestDispatcher("registration.jsp").forward(httpServletRequest, httpServletResponse);
@@ -39,7 +36,7 @@ public class UsersServlet extends HttpServlet {
             return;
         }
 
-        if (accountService.getUserByLogin(login) != null) {
+        if (AccountService.getUserByLogin(login) != null) {
             response.setContentType("text/html;charset=utf-8");
             //response.setStatus(HttpServletResponse.SC_CONFLICT);
             response.getWriter().println("Пользователь с таким логином уже есть, выберите другой логин");
@@ -47,7 +44,7 @@ public class UsersServlet extends HttpServlet {
         }
 
         UserAccount profile = new UserAccount(login, password, email);
-        accountService.addNewUser(profile);
+        AccountService.addNewUser(profile);
 
         var session = request.getSession();
         session.setAttribute("login", login);
@@ -55,7 +52,7 @@ public class UsersServlet extends HttpServlet {
 
         // Создание новой папки для пользователя
         try {
-            fileService.createDirectory(userDirectoriesPath + login);
+            FileService.createDirectory(userDirectoriesPath + login);
         } catch (IOException e) {
             response.setContentType("text/html;charset=utf-8");
             response.getWriter().println(e.getMessage());

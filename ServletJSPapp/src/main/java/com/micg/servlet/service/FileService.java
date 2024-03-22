@@ -14,12 +14,12 @@ import java.util.List;
 
 public class FileService {
 
-    public final static String userDirectoriesPath = "C:\\Users\\micha\\fileManager\\";
+    public static final String userDirectoriesPath = "C:\\Users\\micha\\fileManager\\";
 
-    private List<FileSystemItem> fileSystemElementsInCurrentDir = new ArrayList<>();
-    private String currentDirectoryPath = "";
+    private static List<FileSystemItem> fileSystemElementsInCurrentDir = new ArrayList<>();
+    private static String currentDirectoryPath = "";
 
-    public List<FileSystemItem> GetItemsFromDirectory(String directory) {
+    public static List<FileSystemItem> GetItemsFromDirectory(String directory) {
         currentDirectoryPath = directory;
         fileSystemElementsInCurrentDir = new ArrayList<>();
 
@@ -27,16 +27,16 @@ public class FileService {
         File[] itemsData = currentDirectory.listFiles();
 
         if (itemsData != null) {
-            Arrays.stream(itemsData).forEach(this::GetItem);
+            Arrays.stream(itemsData).forEach(FileService::GetItem);
         }
         return fileSystemElementsInCurrentDir;
     }
 
-    private void GetItem(File itemData) {
+    private static void GetItem(File itemData) {
         fileSystemElementsInCurrentDir.add(itemData.isFile() ? GetFile(itemData) : GetDirectory(itemData));
     }
 
-    private FileSystemItem GetFile(File fileData) {
+    private static FileSystemItem GetFile(File fileData) {
         String currentFileSize = "";
         String currentFileModificationDate = "";
 
@@ -57,7 +57,7 @@ public class FileService {
                 currentFileModificationDate);
     }
 
-    private FileSystemItem GetDirectory(File directoryData) {
+    private static FileSystemItem GetDirectory(File directoryData) {
         String currentDirModificationDate = "";
 
         try {
@@ -75,7 +75,7 @@ public class FileService {
                 currentDirModificationDate);
     }
 
-    public void createDirectory(String path) throws IOException {
+    public static void createDirectory(String path) throws IOException {
         File directory = new File(path);
         if (!directory.exists()) {
             if (!directory.mkdir()) {
