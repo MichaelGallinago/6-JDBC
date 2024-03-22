@@ -17,9 +17,11 @@ import static com.micg.servlet.service.FileService.userDirectoriesPath;
 @WebServlet(urlPatterns = {"/registration"})
 public class UsersServlet extends HttpServlet {
 
-    public void doGet(HttpServletRequest httpServletRequest,
-                      HttpServletResponse httpServletResponse) throws ServletException, IOException {
-        httpServletRequest.getRequestDispatcher("registration.jsp").forward(httpServletRequest, httpServletResponse);
+    public void doGet(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
+            throws ServletException, IOException {
+
+        httpServletRequest.getRequestDispatcher("registration.jsp")
+                .forward(httpServletRequest, httpServletResponse);
     }
 
     //Регистрация в системе
@@ -31,14 +33,12 @@ public class UsersServlet extends HttpServlet {
 
         if (email.isEmpty() || login.isEmpty() || password.isEmpty()) {
             response.setContentType("text/html;charset=utf-8");
-            //response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().println("Отсутсвует email, логин или пароль");
             return;
         }
 
         if (AccountService.getUserByLogin(login) != null) {
             response.setContentType("text/html;charset=utf-8");
-            //response.setStatus(HttpServletResponse.SC_CONFLICT);
             response.getWriter().println("Пользователь с таким логином уже есть, выберите другой логин");
             return;
         }

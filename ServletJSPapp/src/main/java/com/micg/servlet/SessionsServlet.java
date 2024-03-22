@@ -29,7 +29,6 @@ public class SessionsServlet extends HttpServlet {
 
         if (login.isEmpty() || password.isEmpty()) {
             response.setContentType("text/html;charset=utf-8");
-            //response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().println("Отсутсвует логин или пароль");
             return;
         }
@@ -37,7 +36,6 @@ public class SessionsServlet extends HttpServlet {
         UserAccount profile = AccountService.getUserByLogin(login);
         if (profile == null || !profile.password().equals(password)) {
             response.setContentType("text/html;charset=utf-8");
-            //response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().println("Неправильный логин или пароль");
             return;
         }
