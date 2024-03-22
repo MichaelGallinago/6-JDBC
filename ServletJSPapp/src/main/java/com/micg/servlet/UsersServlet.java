@@ -2,6 +2,7 @@ package com.micg.servlet;
 
 import com.micg.servlet.model.UserAccount;
 import com.micg.servlet.service.AccountService;
+import com.micg.servlet.service.FileService;
 import com.micg.servlet.utilities.ServletUtilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,11 +10,15 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.File;
 import java.io.IOException;
+
+import static com.micg.servlet.service.FileService.userDirectoriesPath;
 
 @WebServlet(urlPatterns = {"/registration"})
 public class UsersServlet extends HttpServlet {
+
+    private final AccountService accountService = new AccountService();
+    private final FileService fileService = new FileService();
 
     public void doGet(HttpServletRequest httpServletRequest,
                       HttpServletResponse httpServletResponse) throws ServletException, IOException {
@@ -21,40 +26,43 @@ public class UsersServlet extends HttpServlet {
     }
 
     //Регистрация в системе
-    public void doPost(HttpServletRequest httpServletRequest,
-                       HttpServletResponse httpServletResponse) throws IOException {
-        String email = httpServletRequest.getParameter("email");
-        String login = httpServletRequest.getParameter("login");
-        String password = httpServletRequest.getParameter("password");
+    public void doPost(HttpServletRequest request,
+                       HttpServletResponse response) throws IOException {
+        String email = request.getParameter("email");
+        String login = request.getParameter("login");
+        String password = request.getParameter("password");
 
         if (email.isEmpty() || login.isEmpty() || password.isEmpty()) {
-            httpServletResponse.setContentType("text/html;charset=utf-8");
-            httpServletResponse.getWriter().println("Отсутсвует email, логин или пароль");
+            response.setContentType("text/html;charset=utf-8");
+            //response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().println("Отсутсвует email, логин или пароль");
+            return;
+        }
+
+        if (accountService.getUserByLogin(login) != null) {
+            response.setContentType("text/html;charset=utf-8");
+            //response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.getWriter().println("Пользователь с таким логином уже есть, выберите другой логин");
             return;
         }
 
         UserAccount profile = new UserAccount(login, password, email);
-        if (AccountService.getUserByLogin(login) == null) {
-            AccountService.addNewUser(profile);
+        accountService.addNewUser(profile);
 
-            var session = httpServletRequest.getSession();
-            session.setAttribute("login", login);
-            session.setAttribute("pass", password);
+        var session = request.getSession();
+        session.setAttribute("login", login);
+        session.setAttribute("password", password);
 
-            // Создание новой папки для пользователя
-            File folder = new File("C:\\Users\\micha\\fileManager\\" + login);
-
-            if (!folder.exists() && !folder.mkdir()) {
-                httpServletResponse.setContentType("text/html;charset=utf-8");
-                httpServletResponse.getWriter().println("Случилась ошибка при создании папки, попробуйте ещё раз");
-                return;
-            }
-
-            String currentURL = httpServletRequest.getRequestURL().toString();
-            httpServletResponse.sendRedirect(ServletUtilities.makeRedirectUrl(currentURL, "/manager"));
-        } else {
-            httpServletResponse.setContentType("text/html;charset=utf-8");
-            httpServletResponse.getWriter().println("Пользователь с таким логином уже есть в системе");
+        // Создание новой папки для пользователя
+        try {
+            fileService.createDirectory(userDirectoriesPath + login);
+        } catch (IOException e) {
+            response.setContentType("text/html;charset=utf-8");
+            response.getWriter().println(e.getMessage());
+            return;
         }
+
+        String currentURL = request.getRequestURL().toString();
+        response.sendRedirect(ServletUtilities.makeRedirectUrl(currentURL, "/manager"));
     }
 }

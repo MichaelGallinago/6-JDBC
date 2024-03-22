@@ -1,22 +1,26 @@
 package com.micg.servlet.service;
 
 import com.micg.servlet.model.UserAccount;
+import com.micg.servlet.repository.AccountRepository;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class AccountService {
-    private static final String adminLogin = "admin";
+    private final AccountRepository accountRepository;
 
-    private static final Map<String, UserAccount> loginToAccount = new HashMap<>() {{
-        put(adminLogin, new UserAccount(adminLogin,"4444","test@gmail.com"));
-    }};
-
-    public static void addNewUser(UserAccount UserAccount) {
-        loginToAccount.put(UserAccount.login(), UserAccount);
+    public AccountService() {
+        this.accountRepository = new AccountRepository();
     }
 
-    public static UserAccount getUserByLogin(String login) {
-        return loginToAccount.get(login);
+    public void addNewUser(UserAccount user) {
+        if (user == null) {
+            return;
+        }
+        accountRepository.addUser(user);
+    }
+
+    public UserAccount getUserByLogin(String login) {
+        return accountRepository.getUserByLogin(login);
     }
 }

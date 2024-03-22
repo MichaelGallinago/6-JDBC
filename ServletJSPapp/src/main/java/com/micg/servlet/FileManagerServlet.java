@@ -1,6 +1,6 @@
 package com.micg.servlet;
 
-import com.micg.servlet.service.FileSystemItemsService;
+import com.micg.servlet.service.FileService;
 import com.micg.servlet.utilities.ServletUtilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,44 +16,48 @@ import java.util.Date;
 @WebServlet(urlPatterns = {"/manager"})
 public class FileManagerServlet extends HttpServlet {
 
+    private final FileService fileService = new FileService();
+
     @Override
-    public void doGet(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        String login = (String)httpServletRequest.getSession().getAttribute("login");
-
-        String currentDirPath;
-        String pathToUserDir = "C:\\Users\\micha\\fileManager\\" + login;
-        String pathFromRequest = httpServletRequest.getParameter("path");
-        if (httpServletRequest.getParameter("path") != null && pathFromRequest.startsWith(pathToUserDir)) {
-            currentDirPath = pathFromRequest;
-        } else {
-            currentDirPath = pathToUserDir;
+        String login = (String)request.getSession().getAttribute("login");
+        String password = (String)request.getSession().getAttribute("password");
+        if (login == null || password == null) {
+            response.sendRedirect( "/login");
+            return;
         }
 
-        httpServletRequest.setAttribute("currentDirPath", currentDirPath);
-        httpServletRequest.setAttribute("list", FileSystemItemsService.GetItemsFromDirectory(currentDirPath));
+        String pathToUserDir = FileService.userDirectoriesPath + login;
+        String pathFromRequest = request.getParameter("path");
+
+        String currentDirPath = pathFromRequest != null && pathFromRequest.startsWith(pathToUserDir) ?
+                pathFromRequest : pathToUserDir;
+
+        request.setAttribute("currentDirPath", currentDirPath);
+        request.setAttribute("list", fileService.GetItemsFromDirectory(currentDirPath));
 
         String parentDirPath = new File(currentDirPath).getParent();
         if (parentDirPath == null) {
             parentDirPath = currentDirPath;
         }
-        httpServletRequest.setAttribute("parentDirPath", parentDirPath);
+        request.setAttribute("parentDirPath", parentDirPath);
 
         Date generationDate = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
 
-        httpServletRequest.setAttribute("generationTime", dateFormat.format(generationDate));
-        httpServletRequest.getRequestDispatcher("manager.jsp").forward(httpServletRequest, httpServletResponse);
+        request.setAttribute("generationTime", dateFormat.format(generationDate));
+        request.getRequestDispatcher("manager.jsp").forward(request, response);
     }
 
-    public void doPost(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
+    public void doPost(HttpServletRequest request, HttpServletResponse httpServletResponse)
             throws IOException {
 
-        var session = httpServletRequest.getSession();
+        var session = request.getSession();
         session.removeAttribute("login");
-        session.removeAttribute("pass");
-        String currentURL = httpServletRequest.getRequestURL().toString();
+        session.removeAttribute("password");
+        String currentURL = request.getRequestURL().toString();
         httpServletResponse.sendRedirect(ServletUtilities.makeRedirectUrl(currentURL, "/log"));
     }
 }

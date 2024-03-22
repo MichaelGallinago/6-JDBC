@@ -2,6 +2,7 @@ package com.micg.servlet;
 
 import com.micg.servlet.model.UserAccount;
 import com.micg.servlet.service.AccountService;
+import com.micg.servlet.service.FileService;
 import com.micg.servlet.utilities.ServletUtilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,6 +14,9 @@ import java.io.IOException;
 
 @WebServlet(urlPatterns = {"/"})
 public class SessionsServlet extends HttpServlet {
+
+    private final AccountService accountService = new AccountService();
+
     public void doGet(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
             throws ServletException, IOException {
 
@@ -20,29 +24,31 @@ public class SessionsServlet extends HttpServlet {
     }
 
     //Вход в систему
-    public void doPost(HttpServletRequest httpServletRequest,
-                       HttpServletResponse httpServletResponse) throws IOException {
-        String login = httpServletRequest.getParameter("login");
-        String password = httpServletRequest.getParameter("password");
+    public void doPost(HttpServletRequest request,
+                       HttpServletResponse response) throws IOException {
+        String login = request.getParameter("login");
+        String password = request.getParameter("password");
 
         if (login.isEmpty() || password.isEmpty()) {
-            httpServletResponse.setContentType("text/html;charset=utf-8");
-            httpServletResponse.getWriter().println("Отсутсвует логин или пароль");
+            response.setContentType("text/html;charset=utf-8");
+            //response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().println("Отсутсвует логин или пароль");
             return;
         }
 
-        UserAccount profile = AccountService.getUserByLogin(login);
+        UserAccount profile = accountService.getUserByLogin(login);
         if (profile == null || !profile.password().equals(password)) {
-            httpServletResponse.setContentType("text/html;charset=utf-8");
-            httpServletResponse.getWriter().println("Неправильный логин или пароль");
+            response.setContentType("text/html;charset=utf-8");
+            //response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().println("Неправильный логин или пароль");
             return;
         }
 
-        var session = httpServletRequest.getSession();
+        var session = request.getSession();
         session.setAttribute("login",login);
-        session.setAttribute("pass", password);
+        session.setAttribute("password", password);
 
-        String currentURL = httpServletRequest.getRequestURL().toString();
-        httpServletResponse.sendRedirect(ServletUtilities.makeRedirectUrl(currentURL, "/manager"));
+        String currentURL = request.getRequestURL().toString();
+        response.sendRedirect(ServletUtilities.makeRedirectUrl(currentURL, "/manager"));
     }
 }

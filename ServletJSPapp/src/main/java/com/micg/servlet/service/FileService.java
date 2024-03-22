@@ -3,6 +3,7 @@ package com.micg.servlet.service;
 import com.micg.servlet.model.FileSystemItem;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -11,11 +12,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FileSystemItemsService {
-    private static List<FileSystemItem> fileSystemElementsInCurrentDir = new ArrayList<>();
-    private static String currentDirectoryPath = "";
+public class FileService {
 
-    public static List<FileSystemItem> GetItemsFromDirectory(String directory) {
+    public final static String userDirectoriesPath = "C:\\Users\\micha\\fileManager\\";
+
+    private List<FileSystemItem> fileSystemElementsInCurrentDir = new ArrayList<>();
+    private String currentDirectoryPath = "";
+
+    public List<FileSystemItem> GetItemsFromDirectory(String directory) {
         currentDirectoryPath = directory;
         fileSystemElementsInCurrentDir = new ArrayList<>();
 
@@ -23,16 +27,16 @@ public class FileSystemItemsService {
         File[] itemsData = currentDirectory.listFiles();
 
         if (itemsData != null) {
-            Arrays.stream(itemsData).forEach(FileSystemItemsService::GetItem);
+            Arrays.stream(itemsData).forEach(this::GetItem);
         }
         return fileSystemElementsInCurrentDir;
     }
 
-    private static void GetItem(File itemData) {
+    private void GetItem(File itemData) {
         fileSystemElementsInCurrentDir.add(itemData.isFile() ? GetFile(itemData) : GetDirectory(itemData));
     }
 
-    private static FileSystemItem GetFile(File fileData) {
+    private FileSystemItem GetFile(File fileData) {
         String currentFileSize = "";
         String currentFileModificationDate = "";
 
@@ -53,7 +57,7 @@ public class FileSystemItemsService {
                 currentFileModificationDate);
     }
 
-    private static FileSystemItem GetDirectory(File directoryData) {
+    private FileSystemItem GetDirectory(File directoryData) {
         String currentDirModificationDate = "";
 
         try {
@@ -69,5 +73,14 @@ public class FileSystemItemsService {
                 directoryData.getName(),
                 currentDirectoryPath,
                 currentDirModificationDate);
+    }
+
+    public void createDirectory(String path) throws IOException {
+        File directory = new File(path);
+        if (!directory.exists()) {
+            if (!directory.mkdir()) {
+                throw new IOException("Не удалось создать директорию по этому пути");
+            }
+        }
     }
 }
