@@ -31,21 +31,25 @@ public class Executor {
         }
     }
 
-    public static <T> T executeQuery(String query, ResultHandler<T> handler) {
+    public static <T> T executeQuery(String query, StatementPreparer preparer, ResultHandler<T> handler) {
         checkConnection();
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(query);
-            ResultSet resultSet = statement.getResultSet();
-            return handler.handle(resultSet);
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            preparer.prepare(statement);
+            var result = statement.executeQuery();
+            if (!result.next()) {
+                return null;
+            }
+            return handler.handle(result);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static void executeUpdate(String query) {
+    public static void executeUpdate(String query, StatementPreparer preparer) {
         checkConnection();
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(query);
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            preparer.prepare(statement);
+            statement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
