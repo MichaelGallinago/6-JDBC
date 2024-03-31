@@ -23,7 +23,8 @@ public class FileManagerServlet extends HttpServlet {
         String login = (String)request.getSession().getAttribute("login");
         String password = (String)request.getSession().getAttribute("password");
         if (login == null || password == null) {
-            response.sendRedirect( "/login");
+            String currentURL = request.getRequestURL().toString();
+            response.sendRedirect(ServletUtilities.makeRedirectUrl(currentURL, "/login"));
             return;
         }
 
